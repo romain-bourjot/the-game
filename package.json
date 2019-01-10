@@ -1,0 +1,27 @@
+{
+  "name": "the-game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/romain-bourjot/the-game.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/romain-bourjot/the-game/issues"
+  },
+  "homepage": "https://github.com/romain-bourjot/the-game#readme",
+  "dependencies": {
+    "eslint": "^5.12.0",
+    "eslint-plugin-html": "^5.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1"
+  }
+}

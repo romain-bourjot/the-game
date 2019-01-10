@@ -3,16 +3,16 @@
 
 <head>
   <meta charset='UTF-8'>
-  <title>Jeu vidéo de Noé</title>
-  <link rel="stylesheet" type="text/css" href="assets/index.css">
+  <title>Ze Game</title>
+  <link rel="stylesheet" type="text/css" href="src/index.css">
 </head>
 
-<body class="light-bg">
+<body class="dark-bg">
   <div class="main">
-    <div class="container hidden">
+    <div class="container">
       <canvas class="main-canvas" width="700" height="700" id="mainCanvas">Loading...</canvas>
     </div>
-
+		<!--
     <div class="menu">
       <div>
         <h1>SELECT PLAYER</h1>
@@ -85,13 +85,14 @@
           <img class="player-img" src="assets/WTF.png" />
         </div>
       </div>
-
     </div>
+		-->
   </div>
 
-  <img src="assets/barjot2.png" id="hero-img" class="hidden" />
+  <img src="assets/Barjot2.png" id="hero-img" class="hidden"/>
+	<img src="assets/WTF.png" id="badguy-img" class="hidden" />
 
-  <script src="assets/index.js"></script>
+  <script src="dist/main.js"></script>
 </body>
 
 </html>
