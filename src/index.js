@@ -1,25 +1,47 @@
-const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
-
 // variables
-let score = 0;
+
+const {distance, collision} = require('./physics');
+const {getDrawer} = require('./drawer');
+const {nebulaOnHeroFX, fireOnHeroFX} = require('./fx');
+
 let spawn = 0;
 
 const accelerationMax = 1;
 const speedLimit = 15;
 const friction = 0.95;
 const brake = 0.2;
-let vitesseEnnemi = 0;
 // const powerUpSpeed = 0.3;
 const adaptationEnnemi = 20;
 const PowerUpspawnRate = 0.8;
 
-const ennemi = {
-	x: canvas.width / 2,
-	y: canvas.height / 2,
-	width: 15,
-	height: 15
-};
+class Foe {
+	constructor({image, x, y}) {
+		this.image = image;
+		this.x = x;
+		this.y = y;
+		this.width = 15;
+		this.height = 15;
+		this.adaptation = 20;
+		this.speed = 0;
+		this.done = false;
+		this.started = Date.now();
+	}
+
+	update({hero, score}) {
+		const norm = distance(hero, this);
+
+		const vy = (hero.y - this.y) * this.speed / norm;
+		const vx = (hero.x - this.x) * this.speed / norm;
+
+		this.y += vy;
+		this.x += vx;
+		this.speed = score / this.adaptation;
+	}
+
+	render(drawer) {
+		drawer.drawElement(this);
+	}
+}
 
 const hero = {
 	x: 0,
@@ -44,6 +66,17 @@ const reward = {
 	height: adaptationEnnemi
 };
 
+const state = {
+	_startTime: Date.now(),
+	time: Date.now(),
+	hero,
+	foes: [],
+	effects: [],
+	score: 0
+};
+
+const canvas = document.querySelector('canvas');
+
 const powerUp = {
 	x: Math.random() * canvas.width,
 	y: Math.random() * canvas.height,
@@ -52,48 +85,33 @@ const powerUp = {
 	speed: 0.3
 };
 
-function distance(hy, hx, ey, ex) {
-	return Math.sqrt(Math.pow(hy - ey, 2) + Math.pow(hx - ex, 2));
-}
-
-function drawScore(_score) {
-	const height = 20;
-	ctx.font = `${height}px Verdana`;
-	ctx.fillStyle = 'rgba(0, 0, 0, .9)';
-	const scoreLabel = `SCORE: ${score}`;
-	const {width} = ctx.measureText(scoreLabel);
-
-	ctx.fillText(scoreLabel, (canvas.width - width) / 2, 15 + height);
-}
+const ctx = canvas.getContext('2d');
+const drawer = getDrawer({canvas, ctx});
 
 function draw() {
-	const heroImg = document.getElementById('hero-img');
-	const badguyImg = document.getElementById('badguy-img');
+	hero.image = document.getElementById('hero-img');
 
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-	ctx.drawImage(heroImg, hero.x, hero.y, hero.width, hero.height);
+	drawer.clearScreen();
 
 	ctx.fillStyle = 'blue';
 	ctx.fillRect(reward.x, reward.y, reward.width, reward.height);
 
-	drawScore(score);
+	drawer.drawScore(state.score);
 
-	if (score >= 0) {
-		ctx.drawImage(badguyImg, ennemi.x, ennemi.y, ennemi.width, ennemi.height);
-	}
+	state.foes.forEach(
+		foe => foe.render(drawer)
+	);
+
+	state.effects.forEach(
+		fx => fx.render(drawer)
+	);
+
+	drawer.drawElement(hero);
+
 	if (spawn > PowerUpspawnRate) {
 		ctx.fillStyle = 'cyan';
 		ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 	}
-}
-
-function collision(r, h) {
-	const xin = h.x + h.width >= r.x && h.x <= r.x + r.width;
-	const yin = h.y + h.height >= r.y && h.y <= r.y + r.height;
-
-	return xin && yin;
 }
 
 function keyDown(evt) {
@@ -116,17 +134,41 @@ function keyDown(evt) {
 }
 
 function update() {
-	const norme = distance(hero.y, hero.x, ennemi.y, ennemi.x);
+	state.time = Date.now() - state._startTime;
+	state.effects = state.effects.filter(fx => !fx.done);
 
-	// ennemi
-	const vy = (hero.y - ennemi.y) * vitesseEnnemi / norme;
-	const vx = (hero.x - ennemi.x) * vitesseEnnemi / norme;
-
-	if (score >= 10) {
-		ennemi.y += vy;
-		ennemi.x += vx;
-		vitesseEnnemi = score / adaptationEnnemi;
+	if (state.score < 1 && state.foes.length > 0) {
+		state.foes = [];
 	}
+
+	if (state.score >= 1 && state.foes.length < 1) {
+		const image = document.getElementById('badguy-img');
+		state.foes.push(new Foe({
+			image,
+			x: Math.random() * (canvas.width - reward.width),
+			y: Math.random() * (canvas.height - reward.height)
+		}));
+	}
+
+	if (state.score < 20 && state.foes.length > 1) {
+		state.foes.pop();
+	}
+
+	if (state.score >= 20 && state.foes.length < 2) {
+		const image = document.getElementById('badguy-img');
+		state.foes.push(new Foe({
+			image,
+			x: Math.random() * (canvas.width - reward.width),
+			y: Math.random() * (canvas.height - reward.height)
+		}));
+	}
+
+	state.foes.forEach(
+		foe => foe.update(state)
+	);
+	state.effects.forEach(
+		foe => foe.update(state)
+	);
 
 	// acceleration
 	hero.speed.x += hero.acceleration.x;
@@ -160,25 +202,33 @@ function update() {
 
 	// collisions
 	if (collision(reward, hero)) {
-		score += 1;
+		state.score += 1;
+		state.effects.push(nebulaOnHeroFX(state));
+
 		reward.x = Math.random() * (canvas.width - reward.width);
 		reward.y = Math.random() * (canvas.height - reward.height);
 		if (spawn < PowerUpspawnRate) {
 			spawn = Math.random();
 		}
 	}
-	if (score >= 10) {
-		if (collision(ennemi, hero)) {
-			score -= Math.round(score / 10);
-			ennemi.x = canvas.width / 2;
-			ennemi.y = canvas.height / 2;
-			hero.x = 1;
-			hero.y = 1;
-		}
+
+	const collidingFoe = state.foes.find(
+		foe => collision(foe, hero)
+	);
+
+	if (collidingFoe) {
+		state.score -= Math.round(state.score / 10);
+		state.hero.x = 1;
+		state.hero.y = 1;
 	}
+
 	if (spawn > PowerUpspawnRate) {
 		if (collision(powerUp, hero)) {
-			score += 5;
+			document.getElementById('game-zone').classList.remove('wiggle');
+			window.setTimeout(() => document.getElementById('game-zone').classList.add('wiggle'), 0);
+
+			state.effects.push(fireOnHeroFX(state));
+			state.score += 5;
 			powerUp.x = Math.random() * (canvas.width - powerUp.width);
 			powerUp.y = Math.random() * (canvas.height - powerUp.height);
 			spawn = Math.random();
@@ -212,4 +262,6 @@ function onReady(fn) {
 	}
 }
 
-onReady(update);
+onReady(() => {
+	update();
+});

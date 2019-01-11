@@ -5,13 +5,21 @@
   <meta charset='UTF-8'>
   <title>Ze Game</title>
   <link rel="stylesheet" type="text/css" href="src/index.css">
+	<link rel="stylesheet" type="text/css" href="src/background.css">
 </head>
 
 <body class="dark-bg">
-  <div class="main">
-    <div class="container">
+  <div class="space">
+		<div id='stars'></div>
+		<div id='stars2'></div>
+		<div id='stars3'></div>
+	</div>
+
+	<div class="main">
+    <div class="container" id="game-zone">
       <canvas class="main-canvas" width="700" height="700" id="mainCanvas">Loading...</canvas>
     </div>
+
 		<!--
     <div class="menu">
       <div>
@@ -91,6 +99,8 @@
 
   <img src="assets/Barjot2.png" id="hero-img" class="hidden"/>
 	<img src="assets/WTF.png" id="badguy-img" class="hidden" />
+	<img src="assets/nebula.png" id="nebula-fx-img" class="hidden" />
+	<img src="assets/fire.png" id="fire-fx-img" class="hidden" />
 
   <script src="dist/main.js"></script>
 </body>
