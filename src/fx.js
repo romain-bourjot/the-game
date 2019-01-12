@@ -43,15 +43,10 @@ class Effect {
 		this.index = Math.floor((time - this.start) / this.rate) % this.maxIndex;
 	}
 
-	render(drawer) {
-		drawer.drawRect({
-			color: 'red',
-			x: this.x,
-			y: this.y,
-			width: this.width,
-			height: this.height
-		});
+	shouldRender() { return true; }
+	shouldUpdate() { return true; }
 
+	render(drawer) {
 		drawer.drawSprite({
 			image: this.image,
 			dx: this.x,
@@ -79,7 +74,7 @@ module.exports.nebulaOnHeroFX = function({image, time, hero}) {
 		spriteHeight: 100,
 		sheetWidth: 800,
 		sheetHeight: 800,
-		duration: 800,
+		duration: null,
 		rate: 100,
 		rows: 8,
 		cols: 8
@@ -99,27 +94,7 @@ module.exports.fireOnHeroFX = function({image, time, hero}) {
 		spriteHeight: 100,
 		sheetWidth: 800,
 		sheetHeight: 800,
-		duration: 1500,
-		rate: 100,
-		rows: 8,
-		cols: 8
-	});
-};
-
-module.exports.nebulaOnHeroFX = function({image, time, hero}) {
-	return new Effect({
-		image,
-		time,
-		x: hero.x,
-		y: hero.y,
-		width: 100,
-		height: 100,
-		maxIndex: 61,
-		spriteWidth: 100,
-		spriteHeight: 100,
-		sheetWidth: 800,
-		sheetHeight: 800,
-		duration: 800,
+		duration: null,
 		rate: 100,
 		rows: 8,
 		cols: 8
@@ -152,14 +127,6 @@ module.exports.flamesUnderHeroFX = function({image, time, hero}) {
 	};
 
 	fx.render = function(drawer) {
-		drawer.drawRect({
-			color: 'red',
-			x: this.x,
-			y: this.y,
-			width: this.width,
-			height: this.height
-		});
-
 		drawer.drawSprite({
 			image: this.image,
 			dx: this.x,

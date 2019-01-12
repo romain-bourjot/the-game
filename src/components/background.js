@@ -22,7 +22,7 @@ module.exports.Background = class Background extends Component {
 		}
 
 		eventEmitter.addEventListener(
-			'enableSpeedMode',
+			'ENABLE_PAYBACK', // 'ENABLE_SPEED_MODE',
 			() => {
 				let j = images.length;
 				while (j--) {
@@ -33,7 +33,7 @@ module.exports.Background = class Background extends Component {
 		);
 
 		eventEmitter.addEventListener(
-			'disableSpeedMode',
+			'DISABLE_PAYBACK', // 'DISABLE_SPEED_MODE',
 			() => {
 				let j = images.length;
 				while (j--) {

@@ -31,6 +31,13 @@ module.exports.getDrawer = ({canvas, ctx}) => {
 			ctx.strokeStyle = color;
 			ctx.strokeRect(x, y, width, height);
 			ctx.restore();
+		},
+
+		fillRect: ({color, x, y, width, height}) => {
+			ctx.save();
+			ctx.fillStyle = color;
+			ctx.fillRect(x, y, width, height);
+			ctx.restore();
 		}
 	};
 };

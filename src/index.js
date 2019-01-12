@@ -6,13 +6,21 @@ require('./background.css');
 const {imageLoader} = require('./imageLoader');
 const {collision} = require('./physics');
 const {getDrawer} = require('./drawer');
+const {dispatchEvent} = require('./event');
 
-const {nebulaOnHeroFX, fireOnHeroFX, flamesUnderHeroFX} = require('./fx');
+const {nebulaOnHeroFX, fireOnHeroFX} = require('./fx');
 
 const {Foe} = require('./components/foe');
 const {Hero} = require('./components/hero');
 const {Background} = require('./components/background');
 const {Score} = require('./components/score');
+const {Reward} = require('./components/reward');
+
+const {foeGeneration} = require('./rules/foeGeneration');
+const {rewardRule} = require('./rules/reward');
+const {invincibilityRule} = require('./rules/invincibility');
+const {paybackRule} = require('./rules/payback');
+const {boostRule} = require('./rules/boost');
 
 // XXX
 let heroImage = null;
@@ -21,7 +29,7 @@ let smallStarsImage = null;
 let bigStarsImage = null;
 let badGuyImage = null;
 let fireFxImage = null;
-let flamesFxImage = null;
+let flamesFxImage = null; console.log(flamesFxImage);
 let nebulaFxImage = null;
 
 function init() {
@@ -30,25 +38,19 @@ function init() {
 	const speedLimit = 15;
 	const friction = 0.95;
 	// const powerUpSpeed = 0.3;
-	const adaptationEnnemi = 20;
 	const PowerUpspawnRate = 0.8;
 
-	const reward = {
-		x: 100,
-		y: 100,
-		width: adaptationEnnemi,
-		height: adaptationEnnemi
-	};
-
 	const eventEmitter = document.getElementById('game-zone');
-
-	function dispatchEvent(name, detail) {
-		eventEmitter.dispatchEvent(new CustomEvent(name, {detail}));
-	}
 
 	const canvas = document.getElementById('main-canvas');
 	const stillCanvas = document.getElementById('still-canvas');
 	const bgCanvas = document.getElementById('bg-canvas');
+
+	foeGeneration({eventEmitter});
+	invincibilityRule({eventEmitter});
+	rewardRule({eventEmitter});
+	boostRule({eventEmitter});
+	paybackRule({eventEmitter});
 
 	const hero = new Hero({image: heroImage, eventEmitter});
 
@@ -60,11 +62,13 @@ function init() {
 		time: Date.now(),
 		hero,
 		foes: [],
+		rewards: [],
 		effects: [],
 		score: 0,
 		backgroundPosition: [0, 0, 0],
 		backgroundSpeed: -4,
-		speedMode: false
+		speedMode: false,
+		paybackMode: false
 	};
 
 	const scoreComponent = new Score({score: state.score, eventEmitter});
@@ -97,30 +101,92 @@ function init() {
 		eventEmitter
 	});
 
-	function enableSpeedMode(_state) {
-		if (_state.speedMode) {
-			return;
+	let paybackFx = null;
+	eventEmitter.addEventListener(
+		'ENABLE_PAYBACK',
+		({detail}) => {
+			if (!paybackFx || paybackFx.done) {
+				paybackFx = fireOnHeroFX(Object.assign({image: fireFxImage}, state));
+				state.effects.push(paybackFx);
+			}
+			state.paybackMode = true;
 		}
-		const flames = flamesUnderHeroFX({hero, time: 0, image: flamesFxImage});
-		_state.effects.push(flames);
-		_state.backgroundSpeed *= 8;
+	);
 
-		dispatchEvent('enableSpeedMode');
-
-		window.setTimeout(
-			() => {
-				flames.done = true;
-				dispatchEvent('disableSpeedMode');
-			},
-			5000
-		);
-	}
+	eventEmitter.addEventListener(
+		'DISABLE_PAYBACK',
+		({detail}) => {
+			paybackFx.done = true;
+			state.paybackMode = false;
+		}
+	);
 
 	eventEmitter.addEventListener(
 		'SCORE_INCREMENT',
 		({detail}) => {
 			state.score = Math.max(0, state.score + detail.delta);
-			dispatchEvent('SCORE_CHANGE', {score: state.score});
+			dispatchEvent(eventEmitter, 'SCORE_CHANGE', {score: state.score});
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'CREATE_FOE',
+		() => {
+			state.foes.push(new Foe({
+				image: badGuyImage,
+				x: Math.random() * canvas.width,
+				y: Math.random() * canvas.height
+			}));
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'CREATE_REWARD',
+		() => {
+			state.rewards.push(new Reward({
+				maxWidth: canvas.width,
+				maxHeight: canvas.height
+			}));
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'DESTROY_REWARDS',
+		({detail}) => {
+			detail.rewards.forEach(el => el.destroy());
+		}
+	);
+
+	let invFx = null;
+	eventEmitter.addEventListener(
+		'ENABLE_INVINCIBILITY',
+		() => {
+			if (!invFx || invFx.done) {
+				invFx = nebulaOnHeroFX(Object.assign({image: nebulaFxImage}, state));
+				state.effects.push(invFx);
+			}
+			state.invincibilityMode = true;
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'DISABLE_INVINCIBILITY',
+		() => {
+			invFx.done = true;
+			state.invincibilityMode = false;
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'DEATH',
+		() => {
+			dispatchEvent(
+				eventEmitter,
+				'SCORE_INCREMENT',
+				{delta: -Math.max(1, Math.round(state.score / 10))}
+			);
+			state.hero.x = 1;
+			state.hero.y = 1;
 		}
 	);
 
@@ -141,15 +207,17 @@ function init() {
 
 	function keyDown(evt) {
 		if (DOM_COMMAND_KEY_DOWN_MAP.hasOwnProperty(evt.key)) {
-			dispatchEvent(DOM_COMMAND_KEY_DOWN_MAP[evt.key]);
+			dispatchEvent(eventEmitter, DOM_COMMAND_KEY_DOWN_MAP[evt.key]);
 		}
 	}
 
 	function keyUp(evt) {
 		if (DOM_COMMAND_KEY_UP_MAP.hasOwnProperty(evt.key)) {
-			dispatchEvent(DOM_COMMAND_KEY_UP_MAP[evt.key]);
+			dispatchEvent(eventEmitter, DOM_COMMAND_KEY_UP_MAP[evt.key]);
 		}
 	}
+
+	dispatchEvent(eventEmitter, 'CREATE_REWARD');
 
 	function update() {
 		state.time = Date.now() - state._startTime;
@@ -161,16 +229,9 @@ function init() {
 
 		drawer.clearScreen();
 
-		ctx.fillStyle = 'blue';
-		ctx.fillRect(reward.x, reward.y, reward.width, reward.height);
-
-		state.foes.forEach(
-			foe => foe.render(drawer)
-		);
-
-		state.effects.forEach(
-			fx => fx.render(drawer)
-		);
+		state.foes.forEach(el => el.shouldRender() && el.render(drawer));
+		state.effects.forEach(el => el.shouldRender() && el.render(drawer));
+		state.rewards.forEach(el => el.shouldRender() && el.render(drawer));
 
 		if (spawn > PowerUpspawnRate) {
 			ctx.fillStyle = 'cyan';
@@ -183,6 +244,8 @@ function init() {
 
 		// Update
 		state.effects = state.effects.filter(fx => !fx.done);
+		state.foes = state.foes.filter(foe => !foe.destroyed);
+		state.rewards = state.rewards.filter(reward => !reward.destroyed);
 
 		if (background.shouldUpdate(state)) {
 			background.update(bgDrawer, state);
@@ -190,67 +253,45 @@ function init() {
 
 		state.hero.update(state);
 
-		if (state.score < 1 && state.foes.length > 0) {
-			state.foes = [];
-		}
+		state.foes.forEach(el => el.shouldUpdate() && el.update(state));
+		state.effects.forEach(el => el.shouldUpdate() && el.update(state));
+		state.rewards.forEach(el => el.shouldUpdate() && el.update(state));
 
-		if (state.score >= 1 && state.foes.length < 1) {
-			state.foes.push(new Foe({
-				image: badGuyImage,
-				x: Math.random() * (canvas.width - reward.width),
-				y: Math.random() * (canvas.height - reward.height)
-			}));
-		}
-
-		if (state.score < 20 && state.foes.length > 1) {
-			state.foes.pop();
-		}
-
-		if (state.score >= 20 && state.foes.length < 2) {
-			state.foes.push(new Foe({
-				image: badGuyImage,
-				x: Math.random() * (canvas.width - reward.width),
-				y: Math.random() * (canvas.height - reward.height)
-			}));
-		}
-
-		state.foes.forEach(
-			foe => foe.update(state)
+		const collidingRewards = state.rewards.filter(
+			reward => collision(reward, hero)
 		);
-		state.effects.forEach(
-			foe => foe.update(state)
-		);
+		if (collidingRewards.length > 0) {
+			collidingRewards.forEach(
+				(reward) => dispatchEvent(
+					eventEmitter,
+					reward.collisionEvent,
+					{rewards: collidingRewards}
+				)
+			);
 
-		// collisions
-		if (collision(reward, hero)) {
-			dispatchEvent('SCORE_INCREMENT', {delta: 1});
-			state.effects.push(nebulaOnHeroFX(Object.assign({image: nebulaFxImage}, state)));
-
-			reward.x = Math.random() * (canvas.width - reward.width);
-			reward.y = Math.random() * (canvas.height - reward.height);
+			/*
 			if (spawn < PowerUpspawnRate) {
 				spawn = Math.random();
 			}
+			*/
 		}
 
-		const collidingFoe = state.foes.find(
+		const collidingFoes = state.foes.filter(
 			foe => collision(foe, hero)
 		);
 
-		if (collidingFoe) {
-			dispatchEvent('SCORE_INCREMENT', {delta: -Math.round(state.score / 10)});
-			state.hero.x = 1;
-			state.hero.y = 1;
+		if (collidingFoes.length > 0) {
+			if (state.paybackMode) {
+				collidingFoes.forEach(foe => foe.destroy());
+			} else if (!state.invincibilityMode) {
+				dispatchEvent(eventEmitter, 'DEATH');
+			}
 		}
 
 		if (spawn > PowerUpspawnRate) {
 			if (collision(powerUp, hero)) {
-				document.getElementById('game-zone').classList.remove('wiggle');
-				enableSpeedMode(state);
-				window.setTimeout(() => document.getElementById('game-zone').classList.add('wiggle'), 0);
+				dispatchEvent(eventEmitter, 'BOOST_COLLISION');
 
-				state.effects.push(fireOnHeroFX(Object.assign({image: fireFxImage}, state)));
-				dispatchEvent('SCORE_INCREMENT', {delta: 5});
 				powerUp.x = Math.random() * (canvas.width - powerUp.width);
 				powerUp.y = Math.random() * (canvas.height - powerUp.height);
 				spawn = Math.random();
