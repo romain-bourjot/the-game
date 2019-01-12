@@ -16,8 +16,10 @@
 	</div>
 
 	<div class="main">
-    <div class="container" id="game-zone">
-      <canvas class="main-canvas" width="700" height="700" id="mainCanvas">Loading...</canvas>
+    <div class="container animatable" id="game-zone">
+			<canvas class="bg-canvas" width="700" height="700" id="bg-canvas"></canvas>
+      <canvas class="main-canvas" width="700" height="700" id="main-canvas"></canvas>
+			<canvas class="still-canvas" width="700" height="700" id="still-canvas">Loading...</canvas>
     </div>
 
 		<!--
@@ -101,6 +103,11 @@
 	<img src="assets/WTF.png" id="badguy-img" class="hidden" />
 	<img src="assets/nebula.png" id="nebula-fx-img" class="hidden" />
 	<img src="assets/fire.png" id="fire-fx-img" class="hidden" />
+	<img src="assets/flames.png" id="flames-fx-img" class="hidden" />
+
+	<img src="assets/nebula-bg.png" id="nebula-bg-img" class="hidden" />
+	<img src="assets/stars-big-bg.png" id="stars-big-bg-img" class="hidden" />
+	<img src="assets/stars-small-bg.png" id="stars-small-bg-img" class="hidden" />
 
   <script src="dist/main.js"></script>
 </body>

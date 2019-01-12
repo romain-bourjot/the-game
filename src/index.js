@@ -1,63 +1,22 @@
 // variables
 
-const {distance, collision} = require('./physics');
+const {collision} = require('./physics');
 const {getDrawer} = require('./drawer');
-const {nebulaOnHeroFX, fireOnHeroFX} = require('./fx');
+
+const {nebulaOnHeroFX, fireOnHeroFX, flamesUnderHeroFX} = require('./fx');
+
+const {Foe} = require('./components/foe');
+const {Hero} = require('./components/hero');
+const {Background} = require('./components/background');
+const {Score} = require('./components/score');
 
 let spawn = 0;
 
-const accelerationMax = 1;
 const speedLimit = 15;
 const friction = 0.95;
-const brake = 0.2;
 // const powerUpSpeed = 0.3;
 const adaptationEnnemi = 20;
 const PowerUpspawnRate = 0.8;
-
-class Foe {
-	constructor({image, x, y}) {
-		this.image = image;
-		this.x = x;
-		this.y = y;
-		this.width = 15;
-		this.height = 15;
-		this.adaptation = 20;
-		this.speed = 0;
-		this.done = false;
-		this.started = Date.now();
-	}
-
-	update({hero, score}) {
-		const norm = distance(hero, this);
-
-		const vy = (hero.y - this.y) * this.speed / norm;
-		const vx = (hero.x - this.x) * this.speed / norm;
-
-		this.y += vy;
-		this.x += vx;
-		this.speed = score / this.adaptation;
-	}
-
-	render(drawer) {
-		drawer.drawElement(this);
-	}
-}
-
-const hero = {
-	x: 0,
-	y: 0,
-	width: 50,
-	height: 50,
-	speed: {
-		x: 0,
-		y: 0
-	},
-	acceleration: {
-		x: 0,
-		y: 0
-	}
-
-};
 
 const reward = {
 	x: 100,
@@ -66,16 +25,32 @@ const reward = {
 	height: adaptationEnnemi
 };
 
+const eventEmitter = document.getElementById('game-zone');
+
+const canvas = document.getElementById('main-canvas');
+const stillCanvas = document.getElementById('still-canvas');
+const bgCanvas = document.getElementById('bg-canvas');
+
+const heroImage = document.getElementById('hero-img');
+
+const hero = new Hero({image: heroImage, eventEmitter});
+
 const state = {
+	canvas,
+	speedLimit,
+	friction,
 	_startTime: Date.now(),
 	time: Date.now(),
 	hero,
 	foes: [],
 	effects: [],
-	score: 0
+	score: 0,
+	backgroundPosition: [0, 0, 0],
+	backgroundSpeed: -4,
+	speedMode: false
 };
 
-const canvas = document.querySelector('canvas');
+const scoreComponent = new Score({score: state.score});
 
 const powerUp = {
 	x: Math.random() * canvas.width,
@@ -88,15 +63,93 @@ const powerUp = {
 const ctx = canvas.getContext('2d');
 const drawer = getDrawer({canvas, ctx});
 
-function draw() {
-	hero.image = document.getElementById('hero-img');
+const stillDrawer = getDrawer({canvas: stillCanvas, ctx: stillCanvas.getContext('2d')});
+const bgDrawer = getDrawer({canvas: bgCanvas, ctx: bgCanvas.getContext('2d')});
+
+function drawStill() {
+	if (scoreComponent.shouldRender()) {
+		stillDrawer.clearScreen();
+		scoreComponent.render(stillDrawer);
+	}
+}
+
+const nebulaImage = document.getElementById('nebula-bg-img');
+const smallStarsImage = document.getElementById('stars-small-bg-img');
+const bigStarsImage = document.getElementById('stars-big-bg-img');
+
+const background = new Background({
+	images: [bigStarsImage, smallStarsImage, nebulaImage],
+	width: bgCanvas.width,
+	height: bgCanvas.height,
+	eventEmitter
+});
+
+function incrementScore(delta) {
+	state.score = Math.max(0, state.score + delta);
+}
+
+function enableSpeedMode(_state) {
+	if (_state.speedMode) {
+		return;
+	}
+	const flames = flamesUnderHeroFX({hero, time: 0});
+	_state.effects.push(flames);
+	_state.backgroundSpeed *= 8;
+
+	eventEmitter.dispatchEvent(new CustomEvent('enableSpeedMode', {}));
+
+	window.setTimeout(
+		() => {
+			flames.done = true;
+			eventEmitter.dispatchEvent(new CustomEvent('disableSpeedMode', {}));
+		},
+		5000
+	);
+}
+
+const DOM_COMMAND_KEY_DOWN_MAP = {
+	ArrowDown: 'COMMAND_DOWN',
+	ArrowUp: 'COMMAND_UP',
+	ArrowLeft: 'COMMAND_LEFT',
+	ArrowRight: 'COMMAND_RIGHT',
+	Shift: 'COMMAND_BRAKE'
+};
+
+const DOM_COMMAND_KEY_UP_MAP = {
+	ArrowDown: 'COMMAND_STOP_VERTICAL',
+	ArrowUp: 'COMMAND_STOP_VERTICAL',
+	ArrowLeft: 'COMMAND_STOP_HORIZONTAL',
+	ArrowRight: 'COMMAND_STOP_HORIZONTAL'
+};
+
+function keyDown(evt) {
+	if (DOM_COMMAND_KEY_DOWN_MAP.hasOwnProperty(evt.key)) {
+		eventEmitter.dispatchEvent(
+			new CustomEvent(DOM_COMMAND_KEY_DOWN_MAP[evt.key], {})
+		);
+	}
+}
+
+function keyUp(evt) {
+	if (DOM_COMMAND_KEY_UP_MAP.hasOwnProperty(evt.key)) {
+		eventEmitter.dispatchEvent(
+			new CustomEvent(DOM_COMMAND_KEY_UP_MAP[evt.key], {})
+		);
+	}
+}
+
+function update() {
+	state.time = Date.now() - state._startTime;
+
+	// Render
+	if (background.shouldRender(state)) {
+		background.render(bgDrawer, state);
+	}
 
 	drawer.clearScreen();
 
 	ctx.fillStyle = 'blue';
 	ctx.fillRect(reward.x, reward.y, reward.width, reward.height);
-
-	drawer.drawScore(state.score);
 
 	state.foes.forEach(
 		foe => foe.render(drawer)
@@ -106,36 +159,23 @@ function draw() {
 		fx => fx.render(drawer)
 	);
 
-	drawer.drawElement(hero);
-
 	if (spawn > PowerUpspawnRate) {
 		ctx.fillStyle = 'cyan';
 		ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 	}
-}
 
-function keyDown(evt) {
-	if (evt.key === 'ArrowDown') {
-		hero.acceleration.y = accelerationMax;
-	}
-	if (evt.key === 'ArrowUp') {
-		hero.acceleration.y = -accelerationMax;
-	}
-	if (evt.key === 'ArrowRight') {
-		hero.acceleration.x = accelerationMax;
-	}
-	if (evt.key === 'ArrowLeft') {
-		hero.acceleration.x = -accelerationMax;
-	}
-	if (evt.key === 'Shift') {
-		hero.speed.x *= brake;
-		hero.speed.y *= brake;
-	}
-}
+	drawStill();
 
-function update() {
-	state.time = Date.now() - state._startTime;
+	state.hero.render(drawer);
+
+	// Update
 	state.effects = state.effects.filter(fx => !fx.done);
+
+	if (background.shouldUpdate(state)) {
+		background.update(bgDrawer, state);
+	}
+
+	state.hero.update(state);
 
 	if (state.score < 1 && state.foes.length > 0) {
 		state.foes = [];
@@ -170,39 +210,9 @@ function update() {
 		foe => foe.update(state)
 	);
 
-	// acceleration
-	hero.speed.x += hero.acceleration.x;
-	hero.speed.y += hero.acceleration.y;
-	hero.x += hero.speed.x;
-	hero.y += hero.speed.y;
-
-	if (hero.speed.x > speedLimit) {
-		hero.speed.x = speedLimit;
-	}
-	if (hero.speed.y > speedLimit) {
-		hero.speed.y = speedLimit;
-	}
-	hero.speed.x *= friction;
-	hero.speed.y *= friction;
-
-	// test collision murs
-	if (hero.y + hero.height < 0) {
-		hero.y = canvas.height;
-	}
-	if (hero.y > canvas.height) {
-		hero.y = 0;
-	}
-
-	if (hero.x + hero.width < 0) {
-		hero.x = canvas.width;
-	}
-	if (hero.x > canvas.width) {
-		hero.x = 0;
-	}
-
 	// collisions
 	if (collision(reward, hero)) {
-		state.score += 1;
+		incrementScore(1);
 		state.effects.push(nebulaOnHeroFX(state));
 
 		reward.x = Math.random() * (canvas.width - reward.width);
@@ -217,7 +227,7 @@ function update() {
 	);
 
 	if (collidingFoe) {
-		state.score -= Math.round(state.score / 10);
+		incrementScore(-Math.round(state.score / 10));
 		state.hero.x = 1;
 		state.hero.y = 1;
 	}
@@ -225,26 +235,20 @@ function update() {
 	if (spawn > PowerUpspawnRate) {
 		if (collision(powerUp, hero)) {
 			document.getElementById('game-zone').classList.remove('wiggle');
+			enableSpeedMode(state);
 			window.setTimeout(() => document.getElementById('game-zone').classList.add('wiggle'), 0);
 
 			state.effects.push(fireOnHeroFX(state));
-			state.score += 5;
+			incrementScore(5);
 			powerUp.x = Math.random() * (canvas.width - powerUp.width);
 			powerUp.y = Math.random() * (canvas.height - powerUp.height);
 			spawn = Math.random();
 		}
 	}
-	draw();
-	requestAnimationFrame(update);
-}
 
-function keyUp(evt) {
-	if (evt.key === 'ArrowRight' || evt.key === 'ArrowLeft') {
-		hero.acceleration.x = 0;
-	}
-	if (evt.key === 'ArrowUp' || evt.key === 'ArrowDown') {
-		hero.acceleration.y = 0;
-	}
+	scoreComponent.update(state);
+
+	requestAnimationFrame(update);
 }
 
 window.onkeyup = keyUp;
@@ -263,5 +267,5 @@ function onReady(fn) {
 }
 
 onReady(() => {
-	update();
+	requestAnimationFrame(update);
 });

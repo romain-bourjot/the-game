@@ -37,13 +37,21 @@ class Effect {
 	}
 
 	update({time, hero}) {
-		this.done = time - this.start > this.duration;
+		this.done = this.duration && time - this.start > this.duration;
 		this.x = hero.x - this.width / 2 + hero.width / 2;
 		this.y = hero.y - this.height / 2 + hero.height / 2;
 		this.index = Math.floor((time - this.start) / this.rate) % this.maxIndex;
 	}
 
 	render(drawer) {
+		drawer.drawRect({
+			color: 'red',
+			x: this.x,
+			y: this.y,
+			width: this.width,
+			height: this.height
+		});
+
 		drawer.drawSprite({
 			image: this.image,
 			dx: this.x,
@@ -96,4 +104,75 @@ module.exports.fireOnHeroFX = function({time, hero}) {
 		rows: 8,
 		cols: 8
 	});
+};
+
+module.exports.nebulaOnHeroFX = function({time, hero}) {
+	return new Effect({
+		image: document.getElementById('nebula-fx-img'),
+		time,
+		x: hero.x,
+		y: hero.y,
+		width: 100,
+		height: 100,
+		maxIndex: 61,
+		spriteWidth: 100,
+		spriteHeight: 100,
+		sheetWidth: 800,
+		sheetHeight: 800,
+		duration: 800,
+		rate: 100,
+		rows: 8,
+		cols: 8
+	});
+};
+
+module.exports.flamesUnderHeroFX = function({time, hero}) {
+	const fx = new Effect({
+		image: document.getElementById('flames-fx-img'),
+		time,
+		x: hero.x,
+		y: hero.y,
+		width: 100,
+		height: 100,
+		maxIndex: 61,
+		spriteWidth: 150,
+		spriteHeight: 150,
+		sheetWidth: 800,
+		sheetHeight: 800,
+		duration: null,
+		rate: 100,
+		rows: 8,
+		cols: 8
+	});
+
+	fx.update = function(state) {
+		this.x = state.hero.x - this.width / 2 + state.hero.width / 2;
+		this.y = state.hero.y + state.hero.height / 2;
+		this.index = Math.floor((state.time - this.start) / this.rate) % this.maxIndex;
+	};
+
+	fx.render = function(drawer) {
+		drawer.drawRect({
+			color: 'red',
+			x: this.x,
+			y: this.y,
+			width: this.width,
+			height: this.height
+		});
+
+		drawer.drawSprite({
+			image: this.image,
+			dx: this.x,
+			dy: this.y,
+			dw: this.width,
+			dh: this.height,
+			sx: (this.index % this.cols) * this.spriteWidth,
+			sy: Math.floor(this.index / this.cols) * this.spriteHeight,
+			sw: this.spriteWidth,
+			sh: this.spriteHeight,
+			th: 180
+		});
+	};
+
+	return fx;
 };
