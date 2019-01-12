@@ -66,9 +66,9 @@ class Effect {
 	}
 }
 
-module.exports.nebulaOnHeroFX = function({time, hero}) {
+module.exports.nebulaOnHeroFX = function({image, time, hero}) {
 	return new Effect({
-		image: document.getElementById('nebula-fx-img'),
+		image,
 		time,
 		x: hero.x,
 		y: hero.y,
@@ -86,9 +86,9 @@ module.exports.nebulaOnHeroFX = function({time, hero}) {
 	});
 };
 
-module.exports.fireOnHeroFX = function({time, hero}) {
+module.exports.fireOnHeroFX = function({image, time, hero}) {
 	return new Effect({
-		image: document.getElementById('fire-fx-img'),
+		image,
 		time,
 		x: hero.x,
 		y: hero.y,
@@ -106,9 +106,9 @@ module.exports.fireOnHeroFX = function({time, hero}) {
 	});
 };
 
-module.exports.nebulaOnHeroFX = function({time, hero}) {
+module.exports.nebulaOnHeroFX = function({image, time, hero}) {
 	return new Effect({
-		image: document.getElementById('nebula-fx-img'),
+		image,
 		time,
 		x: hero.x,
 		y: hero.y,
@@ -126,9 +126,9 @@ module.exports.nebulaOnHeroFX = function({time, hero}) {
 	});
 };
 
-module.exports.flamesUnderHeroFX = function({time, hero}) {
+module.exports.flamesUnderHeroFX = function({image, time, hero}) {
 	const fx = new Effect({
-		image: document.getElementById('flames-fx-img'),
+		image,
 		time,
 		x: hero.x,
 		y: hero.y,
