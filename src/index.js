@@ -27,6 +27,10 @@ const reward = {
 
 const eventEmitter = document.getElementById('game-zone');
 
+function dispatchEvent(name, detail) {
+	eventEmitter.dispatchEvent(new CustomEvent(name, {detail}));
+}
+
 const canvas = document.getElementById('main-canvas');
 const stillCanvas = document.getElementById('still-canvas');
 const bgCanvas = document.getElementById('bg-canvas');
@@ -50,7 +54,7 @@ const state = {
 	speedMode: false
 };
 
-const scoreComponent = new Score({score: state.score});
+const scoreComponent = new Score({score: state.score, eventEmitter});
 
 const powerUp = {
 	x: Math.random() * canvas.width,
@@ -84,10 +88,6 @@ const background = new Background({
 	eventEmitter
 });
 
-function incrementScore(delta) {
-	state.score = Math.max(0, state.score + delta);
-}
-
 function enableSpeedMode(_state) {
 	if (_state.speedMode) {
 		return;
@@ -96,16 +96,24 @@ function enableSpeedMode(_state) {
 	_state.effects.push(flames);
 	_state.backgroundSpeed *= 8;
 
-	eventEmitter.dispatchEvent(new CustomEvent('enableSpeedMode', {}));
+	dispatchEvent('enableSpeedMode');
 
 	window.setTimeout(
 		() => {
 			flames.done = true;
-			eventEmitter.dispatchEvent(new CustomEvent('disableSpeedMode', {}));
+			dispatchEvent('disableSpeedMode');
 		},
 		5000
 	);
 }
+
+eventEmitter.addEventListener(
+	'SCORE_INCREMENT',
+	({detail}) => {
+		state.score = Math.max(0, state.score + detail.delta);
+		dispatchEvent('SCORE_CHANGE', {score: state.score});
+	}
+);
 
 const DOM_COMMAND_KEY_DOWN_MAP = {
 	ArrowDown: 'COMMAND_DOWN',
@@ -124,17 +132,13 @@ const DOM_COMMAND_KEY_UP_MAP = {
 
 function keyDown(evt) {
 	if (DOM_COMMAND_KEY_DOWN_MAP.hasOwnProperty(evt.key)) {
-		eventEmitter.dispatchEvent(
-			new CustomEvent(DOM_COMMAND_KEY_DOWN_MAP[evt.key], {})
-		);
+		dispatchEvent(DOM_COMMAND_KEY_DOWN_MAP[evt.key]);
 	}
 }
 
 function keyUp(evt) {
 	if (DOM_COMMAND_KEY_UP_MAP.hasOwnProperty(evt.key)) {
-		eventEmitter.dispatchEvent(
-			new CustomEvent(DOM_COMMAND_KEY_UP_MAP[evt.key], {})
-		);
+		dispatchEvent(DOM_COMMAND_KEY_UP_MAP[evt.key]);
 	}
 }
 
@@ -212,7 +216,7 @@ function update() {
 
 	// collisions
 	if (collision(reward, hero)) {
-		incrementScore(1);
+		dispatchEvent('SCORE_INCREMENT', {delta: 1});
 		state.effects.push(nebulaOnHeroFX(state));
 
 		reward.x = Math.random() * (canvas.width - reward.width);
@@ -227,7 +231,7 @@ function update() {
 	);
 
 	if (collidingFoe) {
-		incrementScore(-Math.round(state.score / 10));
+		dispatchEvent('SCORE_INCREMENT', {delta: -Math.round(state.score / 10)});
 		state.hero.x = 1;
 		state.hero.y = 1;
 	}
@@ -239,7 +243,7 @@ function update() {
 			window.setTimeout(() => document.getElementById('game-zone').classList.add('wiggle'), 0);
 
 			state.effects.push(fireOnHeroFX(state));
-			incrementScore(5);
+			dispatchEvent('SCORE_INCREMENT', {delta: 5});
 			powerUp.x = Math.random() * (canvas.width - powerUp.width);
 			powerUp.y = Math.random() * (canvas.height - powerUp.height);
 			spawn = Math.random();

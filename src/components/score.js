@@ -1,18 +1,21 @@
 const {Component} = require('../component');
 
 module.exports.Score = class Score extends Component {
-	constructor() {
+	constructor({eventEmitter}) {
 		super({x: 0, y: 0, width: 0, height: 0});
 		this.score = null;
 		this._shouldRender = true;
+
+		eventEmitter.addEventListener(
+			'SCORE_CHANGE',
+			({detail}) => { this.score = detail.score; this._shouldRender = true; }
+		);
 	}
 
+	shouldUpdate() { return false; }
 	shouldRender() { return this._shouldRender; }
 
-	update({score}) {
-		this._shouldRender = score !== this.score;
-		this.score = score;
-	}
+	update() {}
 
 	render(drawer) {
 		const ctx = drawer.getCtx();
