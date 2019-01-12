@@ -1,9 +1,9 @@
 const {Component} = require('../component');
 
 module.exports.Score = class Score extends Component {
-	constructor({eventEmitter}) {
+	constructor({eventEmitter, score}) {
 		super({x: 0, y: 0, width: 0, height: 0});
-		this.score = null;
+		this.score = score;
 		this._shouldRender = true;
 
 		eventEmitter.addEventListener(

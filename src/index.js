@@ -1,5 +1,8 @@
 // variables
 
+require('./index.css');
+require('./background.css');
+
 const {collision} = require('./physics');
 const {getDrawer} = require('./drawer');
 

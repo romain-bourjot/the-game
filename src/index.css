@@ -1,11 +1,9 @@
 @font-face {
 	font-family: 'Neuropol';
-	src: url("https://db.onlinewebfonts.com/t/45aa37889a7dfed31a28f5f575985307.eot");
-  src: url("https://db.onlinewebfonts.com/t/45aa37889a7dfed31a28f5f575985307.eot?#iefix") format("embedded-opentype"),
-  url("https://db.onlinewebfonts.com/t/45aa37889a7dfed31a28f5f575985307.woff2") format("woff2"),
-  url("https://db.onlinewebfonts.com/t/45aa37889a7dfed31a28f5f575985307.woff") format("woff"),
-  url("https://db.onlinewebfonts.com/t/45aa37889a7dfed31a28f5f575985307.ttf") format("truetype"),
-  url("https://db.onlinewebfonts.com/t/45aa37889a7dfed31a28f5f575985307.svg#Neuropol X") format("svg");
+	src: url("../fonts/neuropol.eot");
+  src: url("../fonts/neuropol.woff2") format("woff2"),
+  	url("../fonts/neuropol.woff") format("woff"),
+  	url("../fonts/neuropol.ttf") format("truetype");
 }
 
 html { box-sizing: border-box; }
