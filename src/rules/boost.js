@@ -6,7 +6,7 @@ module.exports.boostRule = function boostRule({eventEmitter}) {
 	eventEmitter.addEventListener(
 		'BOOST_COLLISION',
 		({detail}) => {
-			dispatchEvent(eventEmitter, 'DESTROY_BOOSTS', {boost: detail.boosts});
+			dispatchEvent(eventEmitter, 'DESTROY_BOOSTS', {boosts: detail.rewards});
 			dispatchEvent(eventEmitter, 'SCORE_INCREMENT', {delta: 5});
 		}
 	);

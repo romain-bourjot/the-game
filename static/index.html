@@ -6,105 +6,307 @@
   <title>Ze Game</title>
 </head>
 
-<body class="dark-bg">
-  <div class="space">
-		<div id='stars'></div>
-		<div id='stars2'></div>
-		<div id='stars3'></div>
-	</div>
+<style>
+  html { box-sizing: border-box; }
 
-	<div class="main">
-    <div class="container animatable" id="game-zone">
-			<canvas class="bg-canvas" width="700" height="700" id="bg-canvas"></canvas>
-      <canvas class="main-canvas" width="700" height="700" id="main-canvas"></canvas>
-			<canvas class="still-canvas" width="700" height="700" id="still-canvas">Loading...</canvas>
-    </div>
+  body, html {
+    color: rgba(0, 0, 0, .8);
+    font-family: sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+    padding: 0;
+  }
 
-		<!--
-    <div class="menu">
-      <div>
-        <h1>SELECT PLAYER</h1>
-      </div>
-      <div class="players">
-        <div class="player">
-          <img class="player-img" src="assets/barjot2.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Bernard.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Bondot.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Brulfert.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Claret.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Coquelette.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Cornu.png" />
-        </div>
+  *, *::before, *::after {
+    box-sizing: inherit;
+    font-family: inherit;
+  }
 
-        <div class="player">
-          <img class="player-img" src="assets/Cyril.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Davoust.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Drunk.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Elise.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Geoffroy.png" />
-        </div>
+  .loader {
+    align-items: center;
+    background: #000;
+    display: flex;
+    width: 100vw;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    justify-content: center; 
+    overflow-y: hidden;
+    transition: height 1s ease-out, opacity 1s ease-out;
+  }
 
-        <div class="player">
-          <img class="player-img" src="assets/Luis.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Maud.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Payen.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Quetin.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Rémixicain.png" />
-        </div>
+  .loading {
+    height: 100vh;
+    opacity: 1;
+  }
 
-        <div class="player">
-          <img class="player-img" src="assets/Schrameck.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Tiphaine.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/Valentine.png" />
-        </div>
-        <div class="player">
-          <img class="player-img" src="assets/WTF.png" />
-        </div>
-      </div>
-    </div>
-		-->
+  .loaded {
+    height: 0px;
+    opacity: 0.01;
+  }
+
+  @keyframes grow-and-fade {
+    0% {
+      opacity: 0;
+      transform: scale(0.1) translatez(0);
+    }
+
+    40% {
+      opacity: 1;
+    }
+
+    60% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(1) translatez(0);
+    }
+  }
+
+  @keyframes pulsing-fade {
+    0% {
+      opacity: 0;
+    }
+
+    20% {
+      opacity: 0;
+    }
+
+    40% {
+      opacity: 0.8;
+    }
+
+    60% {
+      opacity: 0;
+    }
+  }
+
+  .triangle {
+    animation: grow-and-fade 2000ms linear infinite;
+    height: 150px;
+    left: 0;
+    opacity: 0;
+    width: 150px;
+    position: absolute;
+    top: 0%;
+    transform: translatez(0);
+    transform-origin: 50% 60%;
+    will-change: opacity, transform;
+  }
+
+  .triangle-wrapper {
+    height: 150px;
+    position: relative;
+    width: 150px;
+  }
+
+  .triangle-loading {
+    animation: pulsing-fade 6000ms ease infinite;
+    color: white;
+    font-family: 'Helvetica Neue', Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    left: 50%;
+    letter-spacing: 8px;
+    margin-left: 4px;
+    margin-top: 10px;
+    opacity: 0;
+    position: absolute;
+    top: 100%;
+    transform: translate3d(-50%, -50%, 0);
+    text-transform: uppercase;
+  }
+
+  .triangle-svg {
+    margin-top: -20px;
+    opacity: 0.5;
+    overflow: visible;
+  }
+
+  .triangle-polygon {
+    stroke-width: 5px;
+  }
+
+  .triangle-1 {
+    animation-delay: 0ms;
+  }
+
+  .triangle-1 .triangle-polygon {
+    stroke: hotpink;
+  }
+
+  .triangle-2 {
+    animation-delay: 400ms;
+  }
+
+  .triangle-2 .triangle-polygon {
+    stroke: aqua;
+  }
+
+  .triangle-3 {
+    animation-delay: 600ms;
+  }
+
+  .triangle-3 .triangle-polygon {
+    stroke: cornflowerblue;
+  }
+
+  .triangle-4 {
+    animation-delay: 1200ms;
+  }
+
+  .triangle-4 .triangle-polygon {
+    stroke: yellow;
+  }
+
+  .triangle-5 {
+    animation-delay: 1600ms;
+  }
+
+  .triangle-5 .triangle-polygon {
+    stroke: white;
+  }
+</style>
+
+<body>
+  <div class="space hidden">
+    <div id='stars'></div>
+    <div id='stars2'></div>
+    <div id='stars3'></div>
   </div>
 
-  <img data-src="assets/Barjot2.png" data-name="hero-img" class="hidden"/>
-	<img data-src="assets/WTF.png" data-name="badguy-img" class="hidden" />
-	<img data-src="assets/nebula.png" data-name="nebula-fx-img" class="hidden" />
-	<img data-src="assets/fire.png" data-name="fire-fx-img" class="hidden" />
-	<img data-src="assets/flames.png" data-name="flames-fx-img" class="hidden" />
-	<img data-src="assets/nebula-bg.png" data-name="nebula-bg-img" class="hidden" />
-	<img data-src="assets/stars-big-bg.png" data-name="stars-big-bg-img" class="hidden" />
-	<img data-src="assets/stars-small-bg.png" data-name="stars-small-bg-img" class="hidden" />
+  <div class="main hidden">
+    <div class="container animatable" id="game-zone">
+      <canvas class="bg-canvas" width="700" height="700" id="bg-canvas"></canvas>
+      <canvas class="main-canvas" width="700" height="700" id="main-canvas"></canvas>
+      <canvas class="still-canvas" width="700" height="700" id="still-canvas">Loading...</canvas>
+    </div>
+  </div>
+
+  <div class="menu hidden">
+    <div>
+      <h1>SELECT PLAYER</h1>
+    </div>
+    <div class="players">
+      <div class="player">
+        <img class="player-img" data-src="barjot2.png" data-name="barjot2" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Bernard.png" data-name="Bernard" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Bondot.png" data-name="Bondot" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Brulfert.png" data-name="Brulfert" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Claret.png" data-name="Claret" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Coquelette.png" data-name="Coquelette" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Cornu.png" data-name="Cornu" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Cyril.png" data-name="Cyril" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Davoust.png" data-name="Davoust" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Drunk.png" data-name="Drunk" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Elise.png" data-name="Elise" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Geoffroy.png" data-name="Geoffroy" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Luis.png" data-name="Luis" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Maud.png" data-name="Maud" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Payen.png" data-name="Payen" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Quetin.png" data-name="Quetin" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Rémixicain.png" data-name="Rémixicain" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Schrameck.png" data-name="Schrameck" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Tiphaine.png" data-name="Tiphaine" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="Valentine.png" data-name="Valentine" />
+      </div>
+      <div class="player">
+        <img class="player-img" data-src="WTF.png" data-name="WTF" />
+      </div>
+    </div>
+  </div>
+
+  <img data-src="Barjot2.png" data-name="hero-img" class="hidden" />
+  <img data-src="WTF.png" data-name="badguy-img" class="hidden" />
+  <img data-src="nebula.png" data-name="nebula-fx-img" class="hidden" />
+  <img data-src="fire.png" data-name="fire-fx-img" class="hidden" />
+  <img data-src="flames.png" data-name="flames-fx-img" class="hidden" />
+  <img data-src="nebula-bg.png" data-name="nebula-bg-img" class="hidden" />
+  <img data-src="stars-big-bg.png" data-name="stars-big-bg-img" class="hidden" />
+  <img data-src="stars-small-bg.png" data-name="stars-small-bg-img" class="hidden" />
+
+  <div class="loader loading">
+    <div class="triangle-wrapper">
+      <div class="triangle triangle-1">
+        <svg class="triangle-svg" viewBox="0 0 140 141">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <polygon class="triangle-polygon" points="70 6 136 138 4 138"></polygon>
+          </g>
+        </svg>
+      </div>
+      <div class="triangle triangle-2">
+        <svg class="triangle-svg" viewBox="0 0 140 141">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <polygon class="triangle-polygon" points="70 6 136 138 4 138"></polygon>
+          </g>
+        </svg>
+      </div>
+      <div class="triangle triangle-3">
+        <svg class="triangle-svg" viewBox="0 0 140 141">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <polygon class="triangle-polygon" points="70 6 136 138 4 138"></polygon>
+          </g>
+        </svg>
+      </div>
+      <div class="triangle triangle-4">
+        <svg class="triangle-svg" viewBox="0 0 140 141">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <polygon class="triangle-polygon" points="70 6 136 138 4 138"></polygon>
+          </g>
+        </svg>
+      </div>
+      <div class="triangle triangle-5">
+        <svg class="triangle-svg" viewBox="0 0 140 141">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <polygon class="triangle-polygon" points="70 6 136 138 4 138"></polygon>
+          </g>
+        </svg>
+      </div>
+      <p class="triangle-loading">Loading</p>
+    </div>
+  </div>
 
   <script src="main.js"></script>
 </body>

@@ -1,7 +1,10 @@
 // variables
 
 require('./index.css');
+require('./menu.css');
 require('./background.css');
+
+const {menu} = require('./menu');
 
 const {imageLoader} = require('./imageLoader');
 const {collision} = require('./physics');
@@ -15,6 +18,7 @@ const {Hero} = require('./components/hero');
 const {Background} = require('./components/background');
 const {Score} = require('./components/score');
 const {Reward} = require('./components/reward');
+const {Boost} = require('./components/boost');
 
 const {foeGeneration} = require('./rules/foeGeneration');
 const {rewardRule} = require('./rules/reward');
@@ -29,16 +33,12 @@ let smallStarsImage = null;
 let bigStarsImage = null;
 let badGuyImage = null;
 let fireFxImage = null;
-let flamesFxImage = null; console.log(flamesFxImage);
+let flamesFxImage = null; // eslint-disable-line no-unused-vars
 let nebulaFxImage = null;
 
-function init() {
-	let spawn = 0;
-
+function init() { // eslint-disable-line no-unused-vars
 	const speedLimit = 15;
 	const friction = 0.95;
-	// const powerUpSpeed = 0.3;
-	const PowerUpspawnRate = 0.8;
 
 	const eventEmitter = document.getElementById('game-zone');
 
@@ -72,14 +72,6 @@ function init() {
 	};
 
 	const scoreComponent = new Score({score: state.score, eventEmitter});
-
-	const powerUp = {
-		x: Math.random() * canvas.width,
-		y: Math.random() * canvas.height,
-		width: 10,
-		height: 10,
-		speed: 0.3
-	};
 
 	const ctx = canvas.getContext('2d');
 	const drawer = getDrawer({canvas, ctx});
@@ -154,6 +146,24 @@ function init() {
 		'DESTROY_REWARDS',
 		({detail}) => {
 			detail.rewards.forEach(el => el.destroy());
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'CREATE_BOOST',
+		() => {
+			state.rewards.push(new Boost({
+				maxWidth: canvas.width,
+				maxHeight: canvas.height
+			}));
+		}
+	);
+
+	eventEmitter.addEventListener(
+		'DESTROY_BOOSTS',
+		({detail}) => {
+			console.log(detail);
+			detail.boosts.forEach(el => el.destroy());
 		}
 	);
 
@@ -233,11 +243,6 @@ function init() {
 		state.effects.forEach(el => el.shouldRender() && el.render(drawer));
 		state.rewards.forEach(el => el.shouldRender() && el.render(drawer));
 
-		if (spawn > PowerUpspawnRate) {
-			ctx.fillStyle = 'cyan';
-			ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
-		}
-
 		drawStill();
 
 		state.hero.render(drawer);
@@ -268,12 +273,6 @@ function init() {
 					{rewards: collidingRewards}
 				)
 			);
-
-			/*
-			if (spawn < PowerUpspawnRate) {
-				spawn = Math.random();
-			}
-			*/
 		}
 
 		const collidingFoes = state.foes.filter(
@@ -285,16 +284,6 @@ function init() {
 				collidingFoes.forEach(foe => foe.destroy());
 			} else if (!state.invincibilityMode) {
 				dispatchEvent(eventEmitter, 'DEATH');
-			}
-		}
-
-		if (spawn > PowerUpspawnRate) {
-			if (collision(powerUp, hero)) {
-				dispatchEvent(eventEmitter, 'BOOST_COLLISION');
-
-				powerUp.x = Math.random() * (canvas.width - powerUp.width);
-				powerUp.y = Math.random() * (canvas.height - powerUp.height);
-				spawn = Math.random();
 			}
 		}
 
@@ -322,6 +311,10 @@ function onReady(fn) {
 }
 
 onReady(() => {
+	const loader = document.querySelector('.loader');
+	// const main = document.querySelector('.main');
+	// const space = document.querySelector('.space');
+
 	imageLoader(document, (images) => {
 		heroImage = images['hero-img'];
 		nebulaImage = images['nebula-bg-img'];
@@ -332,6 +325,13 @@ onReady(() => {
 		flamesFxImage = images['flames-fx-img'];
 		nebulaFxImage = images['nebula-fx-img'];
 
-		init();
+		loader.classList.remove('loading');
+		loader.classList.add('loaded');
+
+		// main.classList.remove('hidden');
+		// space.classList.remove('hidden');
+
+		menu();
+		// init();
 	});
 });

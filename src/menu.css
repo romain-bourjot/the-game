@@ -1,0 +1,55 @@
+.menu {
+	background-color: blue;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+}
+
+.players {
+	position: relative;
+	margin-top: 30px;
+	width: 75%;
+	height: 200px;
+	background-color: purple;
+	display: block;
+	overflow: hidden;
+}
+
+.player {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: auto;
+	margin-right: auto;
+	box-sizing: border-box;
+	height: 200px;
+	width: 100%;
+	transition: left .5s ease-in-out;
+}
+
+.player.left-player {
+	left: -100%;
+}
+
+.player.right-player {
+	left: 100%;
+}
+
+.player-img {
+	width: 130px;
+	height: 130px;
+	margin-left: auto 35px auto 35px;
+}
+
+.player:hover {
+	cursor: pointer;
+}
