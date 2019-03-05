@@ -19,7 +19,8 @@ function setIndex(playerElements, idx) {
 		}
 	);
 }
-module.exports.menu = function menu() {
+
+export const menu = function menu() {
 	const menuElement = document.querySelector('.menu');
 	const playerElements = Array.from(document.querySelectorAll('.player'));
 

@@ -1,8 +1,8 @@
-const {dispatchEvent} = require('../event');
+import {dispatchEvent} from '../event';
 
 const RATE = 0.2;
 
-module.exports.boostRule = function boostRule({eventEmitter}) {
+export const boostRule = function boostRule({eventEmitter}) {
 	eventEmitter.addEventListener(
 		'BOOST_COLLISION',
 		({detail}) => {

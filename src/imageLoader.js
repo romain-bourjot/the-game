@@ -1,4 +1,4 @@
-module.exports.imageLoader = function ImageLoader(doc, callback) {
+export const imageLoader = function ImageLoader(doc, callback) {
 	const elements = Array.from(doc.querySelectorAll('img[data-src]'));
 	const loaded = Array(elements.length).fill(false);
 

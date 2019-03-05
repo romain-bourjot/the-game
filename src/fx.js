@@ -61,7 +61,7 @@ class Effect {
 	}
 }
 
-module.exports.nebulaOnHeroFX = function({image, time, hero}) {
+export const nebulaOnHeroFX = function({image, time, hero}) {
 	return new Effect({
 		image,
 		time,
@@ -81,7 +81,7 @@ module.exports.nebulaOnHeroFX = function({image, time, hero}) {
 	});
 };
 
-module.exports.fireOnHeroFX = function({image, time, hero}) {
+export const fireOnHeroFX = function({image, time, hero}) {
 	return new Effect({
 		image,
 		time,
@@ -101,7 +101,7 @@ module.exports.fireOnHeroFX = function({image, time, hero}) {
 	});
 };
 
-module.exports.flamesUnderHeroFX = function({image, time, hero}) {
+export const flamesUnderHeroFX = function({image, time, hero}) {
 	const fx = new Effect({
 		image,
 		time,

@@ -1,8 +1,8 @@
-const {dispatchEvent} = require('../event');
+import {dispatchEvent} from '../event';
 
 const DURATION = 3000;
 
-module.exports.paybackRule = function paybackRule({eventEmitter}) {
+export const paybackRule = function paybackRule({eventEmitter}) {
 	let timeout = null;
 
 	const enablePayback = ({detail}) => {

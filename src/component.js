@@ -1,4 +1,4 @@
-module.exports.Component = class Component {
+export const Component = class Component {
 	constructor({x, y, width, height}) {
 		this.x = x;
 		this.y = y;

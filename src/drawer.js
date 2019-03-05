@@ -1,4 +1,4 @@
-module.exports.getDrawer = ({canvas, ctx}) => {
+export const getDrawer = ({canvas, ctx}) => {
 	return {
 		getCanvas: () => canvas,
 		getCtx: () => ctx,

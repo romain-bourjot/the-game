@@ -1,4 +1,4 @@
-module.exports.stateManager = (initial) => {
+export const stateManager = (initial) => {
 	const currentState = initial;
 	const nextState = {};
 };

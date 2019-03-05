@@ -1,9 +1,9 @@
-const {Component} = require('../component');
+import {Component} from '../component';
 
 const ACCELERATION_MAX = 1;
 const BRAKE_COEF = 0.2;
 
-module.exports.Hero = class Hero extends Component {
+export class Hero extends Component {
 	constructor({image, eventEmitter}) {
 		super({x: 0, y: 0, width: 50, height: 50});
 		this.speed = {x: 0, y: 0};
@@ -77,4 +77,4 @@ module.exports.Hero = class Hero extends Component {
 			height: this.height
 		});
 	}
-};
+}

@@ -1,30 +1,30 @@
 // variables
 
-require('./index.css');
-require('./menu.css');
-require('./background.css');
+import './index.css';
+import './menu.css';
+import './background.css';
 
-const {menu} = require('./menu');
+import {menu} from './menu';
 
-const {imageLoader} = require('./imageLoader');
-const {collision} = require('./physics');
-const {getDrawer} = require('./drawer');
-const {dispatchEvent} = require('./event');
+import {imageLoader} from './imageLoader';
+import {collision} from './physics';
+import {getDrawer} from './drawer';
+import {dispatchEvent} from './event';
 
-const {nebulaOnHeroFX, fireOnHeroFX} = require('./fx');
+import {nebulaOnHeroFX, fireOnHeroFX} from './fx';
 
-const {Foe} = require('./components/foe');
-const {Hero} = require('./components/hero');
-const {Background} = require('./components/background');
-const {Score} = require('./components/score');
-const {Reward} = require('./components/reward');
-const {Boost} = require('./components/boost');
+import {Foe} from './components/foe';
+import {Hero} from './components/hero';
+import {Background} from './components/background';
+import {Score} from './components/score';
+import {Reward} from './components/reward';
+import {Boost} from './components/boost';
 
-const {foeGeneration} = require('./rules/foeGeneration');
-const {rewardRule} = require('./rules/reward');
-const {invincibilityRule} = require('./rules/invincibility');
-const {paybackRule} = require('./rules/payback');
-const {boostRule} = require('./rules/boost');
+import {foeGeneration} from './rules/foeGeneration';
+import {rewardRule} from './rules/reward';
+import {invincibilityRule} from './rules/invincibility';
+import {paybackRule} from './rules/payback';
+import {boostRule} from './rules/boost';
 
 // XXX
 let heroImage = null;

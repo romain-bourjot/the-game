@@ -1,6 +1,6 @@
-const {Component} = require('../component');
+import {Component} from '../component';
 
-module.exports.Score = class Score extends Component {
+export class Score extends Component {
 	constructor({eventEmitter, score}) {
 		super({x: 0, y: 0, width: 0, height: 0});
 		this.score = score;
@@ -37,4 +37,4 @@ module.exports.Score = class Score extends Component {
 
 		this._shouldRender = false;
 	}
-};
+}

@@ -1,6 +1,6 @@
-const {Component} = require('../component');
+import {Component} from '../component';
 
-module.exports.Boost = class Boost extends Component {
+export class Boost extends Component {
 	constructor({maxWidth, maxHeight}) {
 		super({
 			x: Math.random() * (maxWidth - 20),
@@ -19,4 +19,4 @@ module.exports.Boost = class Boost extends Component {
 	render(drawer) {
 		drawer.fillRect(this);
 	}
-};
+}

@@ -1,6 +1,6 @@
-const {dispatchEvent} = require('../event');
+import {dispatchEvent} from '../event';
 
-module.exports.rewardRule = function rewardRule({eventEmitter}) {
+export const rewardRule = function rewardRule({eventEmitter}) {
 	eventEmitter.addEventListener(
 		'REWARD_COLLISION',
 		({detail}) => {

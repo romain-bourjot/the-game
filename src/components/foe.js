@@ -1,7 +1,7 @@
-const {Component} = require('../component');
-const {distance} = require('../physics');
+import {Component} from '../component';
+import {distance} from '../physics';
 
-module.exports.Foe = class Foe extends Component {
+export class Foe extends Component {
 	constructor({image, x, y}) {
 		super({x, y, width: 15, height: 15});
 		this.image = image;
@@ -23,4 +23,4 @@ module.exports.Foe = class Foe extends Component {
 	render(drawer) {
 		drawer.drawElement(this);
 	}
-};
+}
