@@ -25,7 +25,7 @@
     "es6": true,
     "browser": true
   },
-	parserOptions: {
+  parserOptions: {
     ecmaFeatures: {
       experimentalObjectRestSpread: true
     },
