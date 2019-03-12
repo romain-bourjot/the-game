@@ -25,6 +25,12 @@
     "es6": true,
     "browser": true
   },
+  parserOptions: {
+    ecmaFeatures: {
+      experimentalObjectRestSpread: true
+    },
+    sourceType: 'module'
+  },
     "rules": {
       "strict": [2, "never"],
       "no-var": 2,

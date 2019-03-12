@@ -1,10 +1,10 @@
-const {Component} = require('../component');
+import {Component} from '../component';
 
 const FRAME_DURATION = 50;
 const MIN_SPEED = -1;
 const MAX_SPEED = -8;
 
-module.exports.Background = class Background extends Component {
+export class Background extends Component {
 	constructor({images, width, height, eventEmitter}) {
 		super({x: 0, y: 0, width, height});
 		this.lastRender = null;
@@ -81,4 +81,4 @@ module.exports.Background = class Background extends Component {
 		}
 		this.lastRender = time;
 	}
-};
+}

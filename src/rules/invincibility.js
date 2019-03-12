@@ -1,8 +1,8 @@
-const {dispatchEvent} = require('../event');
+import {dispatchEvent} from '../event';
 
 const DURATION = 800;
 
-module.exports.invincibilityRule = function invincibilityRule({eventEmitter}) {
+export const invincibilityRule = function invincibilityRule({eventEmitter}) {
 	let timeout = null;
 
 	const enableInvincibililty = ({detail}) => {

@@ -1,8 +1,8 @@
-const {dispatchEvent} = require('../event');
+import {dispatchEvent} from '../event';
 
 const THRESHOLD = 5;
 
-module.exports.foeGeneration = function({eventEmitter}) {
+export const foeGeneration = function({eventEmitter}) {
 	this.lastScore = 0;
 
 	eventEmitter.addEventListener(

@@ -20,6 +20,11 @@ module.exports = {
 	module: {
 		rules: [
 			{
+				test: /\.js$/,
+				exclude: /node_modules/,
+				use: ['babel-loader']
+			},
+			{
 				test: /\.css$/,
 				use: ['style-loader', 'css-loader']
 			},
@@ -28,5 +33,8 @@ module.exports = {
 				use: ['base64-inline-loader']
 			}
 		]
+	},
+	resolve: {
+		  extensions: ['*', '.js']
 	}
 };
